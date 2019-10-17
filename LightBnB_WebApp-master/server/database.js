@@ -7,6 +7,7 @@ const pool = new Pool({
 })
 
 module.exports = {
+
 /// Users
 /**
  * Get a single user from the database given their email.
@@ -37,7 +38,7 @@ getUserWithId : function(id) {
   SELECT * 
   FROM users
   WHERE id = $1 
-  `, [id])
+  `, [Number(id)])
     .then(res => {
       return res.rows[0];
     })
@@ -78,7 +79,7 @@ getAllReservations : function(guest_id, limit = 10) {
   GROUP BY reservations.id, properties.id
   ORDER BY reservations.start_date
   LIMIT $2;
-  `, [guest_id, limit])
+  `, [Number(guest_id), limit])
     .then(res => {
       return res.rows;
     })
@@ -98,7 +99,7 @@ getAllProperties : function(options, limit = 10) {
   let queryString = `
   SELECT properties.*, avg(property_reviews.rating) as average_rating
   FROM properties
-  JOIN property_reviews ON properties.id = property_reviews.property_id
+  LEFT JOIN property_reviews ON properties.id = property_reviews.property_id
   `;
 
   if (options.city) {
@@ -108,12 +109,12 @@ getAllProperties : function(options, limit = 10) {
 
   if (queryParams[0]) {
     if (options.owner_id) {
-      queryParams.push(`${options.owner_id}`);
+      queryParams.push(Number(options.owner_id));
       queryString += ` AND owner_id = $${queryParams.length}`;
     }
   } else {
     if (options.owner_id) {
-      queryParams.push(`${options.owner_id}`);
+      queryParams.push(Number(options.owner_id));
       queryString += `WHERE owner_id = $${queryParams.length}`;
     }
   }
@@ -160,6 +161,9 @@ getAllProperties : function(options, limit = 10) {
 
   return pool.query(queryString, queryParams)
   .then(res => {
+    console.log();
+    console.log(queryString);
+    console.log(queryParams);
     return res.rows});
 },
 
